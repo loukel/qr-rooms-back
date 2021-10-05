@@ -1,11 +1,43 @@
 const express = require('express')
-const morgan = require('morgan')
-const mongoose = require('mongoose')
-const socket = require("socket.io")
-const Gathering = require('./models/gathering')
+const socket = require('socket.io')
 
 const app = express()
 
-mongoose.connect('mongodb://localhost:27017/qr-rooms')
-const server = app.listen(3001)
+// Start Server 🎉
+const PORT = process.env.PORT || 3001
+let server = app.listen(PORT, () => {
+  console.log(`Web server listening on ${PORT}`)
+})
 
+const io = socket(server, {
+  cors: {
+    origin: '*',
+  },
+})
+
+// const {} = require('./sockets')(io)
+let gatherings = []
+const onConnection = socket => {
+  socket.on('gathering:join', gatheringId => {
+    const [gathering] = gatherings.filter(gathering => gathering.id === gatheringId)
+    if (!gathering) {
+      socket.emit('gathering', 404)
+    } else {
+      socket.join(gatheringId)
+      socket.emit('gathering', gathering)
+    }
+  })
+
+  socket.on('gathering:create', () => {
+    const id = Math.random()
+      .toString(36)
+      .substring(7)
+
+    const gathering = { id }
+    gatherings.push(gathering)
+    socket.join(id)
+    io.in(id).emit('gathering', gathering)
+  })
+}
+
+io.on('connection', onConnection)

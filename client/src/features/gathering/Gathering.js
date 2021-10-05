@@ -1,11 +1,13 @@
 import { useEffect } from 'react'
-import { useParams } from 'react-router'
+import { useHistory, useParams } from 'react-router'
 import Header from '../../components/header/Header'
 import qrImage from '../../resources/qr-example.png'
 import { socket } from '../../lib/socket'
 
 const Gathering = () => {
   const { gatheringId } = useParams()
+  const history = useHistory()
+
   useEffect(() => {
     // If query param is null -> create room
     // If query param is invalid -> display error, suggest creating a room
@@ -20,8 +22,8 @@ const Gathering = () => {
     } else {
       // Create room
       socket.emit('gathering:create')
-      socket.on('gathering', (data) => {
-        console.log(data)
+      socket.on('gathering', gathering => {
+        history.push(`/${gathering.id}`)
       })
     }
   }, [])
