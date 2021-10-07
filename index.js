@@ -1,5 +1,15 @@
 const express = require('express')
 const socket = require('socket.io')
+const redis = require('redis')
+const dotenv = require('dotenv')
+
+const client = redis.createClient(process.env.REDIS_URL)
+
+client.on("error", error => {
+  console.error(error)
+})
+
+dotenv.config()
 
 const app = express()
 
