@@ -1,14 +1,16 @@
 import { useState } from 'react'
 import { Button, Form } from 'react-bootstrap'
+import { socket } from '../../lib/socket'
 
-const SocialForm = () => {
+const SocialForm = ({ socialAddedQuery }) => {
   const [name, setName] = useState('')
   const [snapchat, setSnapchat] = useState('')
   const [instagram, setInstagram] = useState('')
 
   const handleSubmit = e => {
     e.preventDefault()
-    console.log(name, snapchat, instagram)
+    socket.emit('gathering:add', {name, snapchat, instagram})
+    socialAddedQuery()
   }
 
   return ( 

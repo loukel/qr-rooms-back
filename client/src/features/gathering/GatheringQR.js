@@ -4,8 +4,8 @@ const GatheringQR = ({ gatheringId }) => {
   const gatheringURL = `${window.location.origin}/${gatheringId}`
 
   return ( 
-    <QRCode value={gatheringURL} />
+    <QRCode value={gatheringURL} className='m-3'/>
   )
 }
- 
+
 export default GatheringQR

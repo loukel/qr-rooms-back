@@ -33,10 +33,19 @@ const onConnection = socket => {
       .toString(36)
       .substring(7)
 
-    const gathering = { id }
+    const gathering = { id, attendees: [] }
     gatherings.push(gathering)
     socket.join(id)
     io.in(id).emit('gathering', gathering)
+  })
+
+  socket.on('gathering:add', socials => {
+    const [, gatheringId] = Array.from(socket.rooms)
+    if (gatheringId) {
+      gatheringIndex = gatherings.findIndex((gathering) => gathering.id === gatheringId)
+      gatherings[gatheringIndex].attendees.push(socials)
+      io.in(gatheringId).emit('gathering', gatherings[gatheringIndex])
+    }
   })
 }
 

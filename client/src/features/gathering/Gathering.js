@@ -1,13 +1,17 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useHistory, useParams } from 'react-router'
 import Header from '../../components/header/Header'
 import { socket } from '../../lib/socket'
+import Attendees from './Attendees'
 import GatheringQR from './GatheringQR'
 import SocialForm from './SocialForm'
 
 const Gathering = () => {
   const { gatheringId } = useParams()
   const history = useHistory()
+
+  const [gathering, setGathering] = useState({})
+  const [socialAdded, setSocialAdded] = useState(false)
 
   useEffect(() => {
     // If query param is null -> create room
@@ -17,24 +21,30 @@ const Gathering = () => {
     if (gatheringId) {
       // Try to join room
       socket.emit('gathering:join', gatheringId)
-      socket.on('gathering', (data) => {
-        console.log(data)
-      })
     } else {
       // Create room
       socket.emit('gathering:create')
-      socket.on('gathering', gathering => {
-        history.push(`/${gathering.id}`)
-      })
     }
+    socket.on('gathering', data => {
+      setGathering({...data})
+    })
   }, [])
+
+  useEffect(() => {
+    if (!gatheringId && gathering.id) {
+      history.push(`/${gathering.id}`)
+    }
+  }, [gathering])
+
+  if (!gathering) return (<div>Loading</div>) 
 
   return (
     <div className='container'>
       <Header />
       <div className='text-center p-3'>
-        <SocialForm />
+        {!socialAdded && <SocialForm socialAddedQuery={() => setSocialAdded(true)}/>}
         <GatheringQR gatheringId={gatheringId}/>
+        {gathering?.attendees?.length && <Attendees data={gathering?.attendees} />}
       </div>
     </div>
   )
