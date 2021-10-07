@@ -3,6 +3,7 @@ import { useHistory, useParams } from 'react-router'
 import Header from '../../components/header/Header'
 import { socket } from '../../lib/socket'
 import GatheringQR from './GatheringQR'
+import SocialForm from './SocialForm'
 
 const Gathering = () => {
   const { gatheringId } = useParams()
@@ -32,6 +33,7 @@ const Gathering = () => {
     <div className='container'>
       <Header />
       <div className='text-center p-3'>
+        <SocialForm />
         <GatheringQR gatheringId={gatheringId}/>
       </div>
     </div>
