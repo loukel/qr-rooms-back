@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
 import { useHistory, useParams } from 'react-router'
 import Header from '../../components/header/Header'
-import qrImage from '../../resources/qr-example.png'
 import { socket } from '../../lib/socket'
+import GatheringQR from './GatheringQR'
 
 const Gathering = () => {
   const { gatheringId } = useParams()
@@ -32,7 +32,7 @@ const Gathering = () => {
     <div className='container'>
       <Header />
       <div className='text-center p-3'>
-        <img src={qrImage} alt='qr-code' className='w-75' />
+        <GatheringQR gatheringId={gatheringId}/>
       </div>
     </div>
   )
