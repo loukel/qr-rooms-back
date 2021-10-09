@@ -17,10 +17,12 @@
   },
   "homepage": "https://github.com/loukel/qr-generator#readme",
   "dependencies": {
+    "cuid": "^2.1.8",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "mongoose": "^6.0.8",
     "redis": "^3.1.2",
+    "redis-json": "^6.0.2",
     "socket.io": "^4.2.0"
   }
 }

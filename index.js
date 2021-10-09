@@ -2,8 +2,11 @@ const express = require('express')
 const socket = require('socket.io')
 const redis = require('redis')
 const dotenv = require('dotenv')
+const cuid = require('cuid')
+const JSONCache = require('redis-json')
 
 const client = redis.createClient(process.env.REDIS_URL)
+const jsonCache = new JSONCache(client)
 
 client.on("error", error => {
   console.error(error)
@@ -25,36 +28,33 @@ const io = socket(server, {
   },
 })
 
-// const {} = require('./sockets')(io)
-let gatherings = []
 const onConnection = socket => {
-  socket.on('gathering:join', gatheringId => {
-    const [gathering] = gatherings.filter(gathering => gathering.id === gatheringId)
-    if (!gathering) {
+  socket.on('gathering:join', async gatheringId => {
+    const attendees = await jsonCache.get(gatheringId)
+    if (!attendees) {
       socket.emit('gathering', 404)
     } else {
       socket.join(gatheringId)
-      socket.emit('gathering', gathering)
+      socket.emit('gathering', {gatheringId, attendees})
     }
   })
 
   socket.on('gathering:create', () => {
-    const id = Math.random()
-      .toString(36)
-      .substring(7)
+    const id = cuid()
 
-    const gathering = { id, attendees: [] }
-    gatherings.push(gathering)
+    const attendees = []
+    jsonCache.set(id, attendees)
     socket.join(id)
-    io.in(id).emit('gathering', gathering)
+    io.in(id).emit('gathering', {id, attendees})
   })
 
-  socket.on('gathering:add', socials => {
+  socket.on('gathering:add', async socials => {
     const [, gatheringId] = Array.from(socket.rooms)
     if (gatheringId) {
-      gatheringIndex = gatherings.findIndex((gathering) => gathering.id === gatheringId)
-      gatherings[gatheringIndex].attendees.push(socials)
-      io.in(gatheringId).emit('gathering', gatherings[gatheringIndex])
+      let attendees = await jsonCache.get(gatheringId)
+      attendees = [...attendees, socials]
+      jsonCache.set(gatheringId, attendees)
+      io.in(gatheringId).emit('gathering', {gatheringId, attendees})
     }
   })
 }
