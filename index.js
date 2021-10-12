@@ -2,8 +2,8 @@ const express = require('express')
 const socket = require('socket.io')
 const redis = require('redis')
 const dotenv = require('dotenv')
-const cuid = require('cuid')
 const JSONCache = require('redis-json')
+const randomWords = require('random-words');
 
 const client = redis.createClient(process.env.REDIS_URL)
 const jsonCache = new JSONCache(client)
@@ -39,9 +39,17 @@ const onConnection = socket => {
     }
   })
 
-  socket.on('gathering:create', () => {
-    const id = cuid()
-
+  socket.on('gathering:create', async () => {
+    let id = randomWords()
+    while (true) {
+      const collision = await jsonCache.get(id)
+      console.log(id)
+      if (collision === undefined) {
+        break
+      } else {
+        id = randomWords()
+      }
+    }
     const attendees = []
     jsonCache.set(id, attendees)
     socket.join(id)
